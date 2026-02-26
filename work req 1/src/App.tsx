@@ -1,34 +1,42 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { useEffect, useState } from 'react'
 import './App.css'
 
+type FunFact = {
+  text: string
+}
+
 function App() {
-  const [count, setCount] = useState(0)
+
+  const [currentFact, setCurrentFact] = useState<FunFact | null>(null)
+
+  useEffect(() => {
+    let interval: number
+
+    fetch('/funfacts.json')
+      .then(res => res.json())
+      .then(data => {
+        const facts: FunFact[] = data.funFacts
+        setCurrentFact(randomFact(facts))
+        interval = window.setInterval(() => {
+          setCurrentFact(randomFact(facts))
+        }, 2000)
+      })
+
+    return () => clearInterval(interval)
+  }, [])
+
+
+  function randomFact(facts: FunFact[]) {
+    const index = Math.floor(Math.random() * facts.length)
+    return facts[index]
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div>
+      <h1>Introducing Yourself - Random Fun Fact</h1>
+      <h2>Hello, I'm Tobias!</h2>
+      <p>{currentFact?.text || 'Loading...'}</p>
+    </div>
   )
 }
 
